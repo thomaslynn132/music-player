@@ -12,7 +12,7 @@ h1 {
 }
 
 .header {
-  margin-top: 0px;
+  margin: 5px;
   height: 50px;
   width: 100%;
   padding-top: 0px;
@@ -21,15 +21,16 @@ h1 {
   flex-direction: row;
 }
 .input {
-  width: 20vw;
+  width: 200px;
   height: 30px;
+  margin: 15px;
+  padding: 15px;
   display: block;
   position: relative;
+  font-size: 12px;
   box-shadow: 0px 5px 5px 0px;
   color: rgb(255, 255, 255);
   background-color: black;
-  margin: 5px;
-  padding: 15px;
 }
 
 .addTask {
@@ -48,10 +49,13 @@ h1 {
 
 .title {
   color: aqua;
-  font-size: 35px;
+  font-size: 20px;
   font-weight: bolder;
 }
-
+.pages {
+  margin: 15px;
+  padding: 15px;
+}
 .task {
   padding: 15px;
   margin: 15px;
@@ -68,9 +72,18 @@ h1 {
 .catego {
   height: 30px;
   width: 100px;
+  margin: 15px;
   color: aquamarine;
   background-color: slategray;
   box-sizing: border-box;
   box-shadow: 0px 5px 5px 0px;
-  margin-left: 8px;
+  margin: 18px;
+}
+.completedTask {
+  width: auto;
+  background-color: rgb(0, 9, 95);
+  margin: 5px;
+  padding: 10px;
+  display: block;
+  box-shadow: 5px 5px 0px 0px;
 }

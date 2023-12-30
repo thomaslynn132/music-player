@@ -1,42 +1,13 @@
+// App.js
 import "./App.css";
-import React, { useState, useEffect } from "react";
-import { db } from "./Config/firebase";
-import {
-  collection,
-  addDoc,
-  setDoc,
-  onSnapshot,
-  doc,
-  deleteDoc,
-} from "firebase/firestore";
+import React, { useState } from "react";
+import { Link, Route, Routes } from "react-router-dom";
 
 function App() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
   const [completed, setCompleted] = useState(false);
   const [description, setDescription] = useState("");
-
-  useEffect(() => {
-    const fetchTasks = () => {
-      try {
-        const tasksCollection = collection(db, "tasks");
-
-        const unsubscribe = onSnapshot(tasksCollection, (querySnapshot) => {
-          const tasksData = [];
-          querySnapshot.forEach((doc) => {
-            tasksData.push({ id: doc.id, ...doc.data() });
-          });
-          setTasks(tasksData);
-        });
-
-        return () => unsubscribe();
-      } catch (error) {
-        console.error("Error fetching tasks:", error);
-      }
-    };
-
-    fetchTasks();
-  }, []);
 
   const handleTitleChange = (e) => {
     setTitle(e.target.value);
@@ -46,77 +17,44 @@ function App() {
     setDescription(e.target.value);
   };
 
-  const handleAddTask = async () => {
+  const handleAddTask = () => {
+    // Add your task creation logic here (without Firebase)
+    // For example, you can update the 'tasks' state directly
     if (title.trim() !== "" && description.trim() !== "") {
-      try {
-        const tasksCollection = collection(db, "tasks");
-        await addDoc(tasksCollection, { title, description });
+      const newTask = {
+        id: tasks.length + 1,
+        title,
+        description,
+        completed: false,
+      };
 
-        setTitle("");
-        setDescription("");
-        setCompleted(false);
-      } catch (error) {
-        console.error("Error adding task:", error);
-      }
-    }
-  };
-  const handleEditTask = async (taskId) => {
-    try {
-      const newTitle = prompt(
-        "Write down how you would like to edit the title.",
-        ""
-      );
-      const newDescription = prompt(
-        "Write down how you would like to edit the description.",
-        ""
-      );
-      if (newTitle !== null && newDescription !== null) {
-        const taskDocRef = doc(db, "tasks", taskId);
-        await setDoc(
-          taskDocRef,
-          { title: newTitle, description: newDescription },
-          { merge: true }
-        );
-
-        console.log("Task updated successfully!");
-      } else {
-        console.log("Task edition cancelled.");
-      }
-    } catch (error) {
-      console.error("Error updating task:", error);
+      setTasks((prevTasks) => [...prevTasks, newTask]);
+      setTitle("");
+      setDescription("");
+      setCompleted(!completed);
     }
   };
 
-  const handleDeleteTask = async (taskId) => {
-    try {
-      const taskDoc = doc(db, "tasks", taskId);
-      await deleteDoc(taskDoc);
-    } catch (error) {
-      console.error("Error deleting task:", error);
-    }
+  const handleEditTask = (taskId) => {
+    // Add your task editing logic here
+    // For example, you can open a modal or prompt for editing
+    console.log("Edit task with ID:", taskId);
   };
 
-  const handleCompletedTask = async (taskId) => {
-    try {
-      const updatedTasks = tasks.map((task) =>
+  const handleDeleteTask = (taskId) => {
+    // Add your task deletion logic here
+    // For example, you can filter out the task with the specified ID
+    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+  };
+
+  const handleCompletedTask = (taskId) => {
+    // Add your task completion logic here
+    // For example, you can toggle the 'completed' status of the task
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
         task.id === taskId ? { ...task, completed: !task.completed } : task
-      );
-
-      setTasks(updatedTasks);
-
-      // Update the completion status in the Firestore database
-      const taskDocRef = doc(db, "tasks", taskId);
-      await setDoc(
-        taskDocRef,
-        {
-          completed: !updatedTasks.find((task) => task.id === taskId)
-            ?.completed,
-        },
-        { merge: true }
-      );
-    } catch (error) {
-      console.error("Error updating task:", error);
-    }
+      )
+    );
   };
 
   return (
@@ -152,40 +90,78 @@ function App() {
         </p>
       </div>
       <div className="pages">
-        <button className="catego">To Do</button>
-        <button className="catego">Completed</button>
+        <Link to="/" exact>
+          <button className="catego">To Do</button>
+        </Link>
+        <Link to="/completed" exact>
+          <button className="catego">Completed</button>
+        </Link>
       </div>
       <div className="container">
-        <div className="thingsToDo">
-          {tasks.map((task) => (
-            <div
-              className={task.completed ? "completedTask" : "task"}
-              key={task.id}>
-              <p className="title">{task.title}</p>
-              <p className="Description">{task.description}</p>
-              <button
-                className="innerBtn"
-                onClick={() => handleEditTask(task.id)}>
-                edit
-              </button>
-              <button
-                className="innerBtn"
-                onClick={() => handleDeleteTask(task.id)}>
-                Delete
-              </button>
-              <input
-                style={{
-                  height: "20px",
-                  width: "20px",
-                }}
-                type="checkbox"
-                checked={completed}
-                onChange={() => handleCompletedTask(task.id)}
-              />
-              <label>Completed</label>
-            </div>
-          ))}
-        </div>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <div className="thingsToDo">
+                {tasks
+                  .filter((task) => !task.completed)
+                  .map((task) => (
+                    <div className="task" key={task.id}>
+                      <p className="title">{task.title}</p>
+                      <p className="Description">{task.description}</p>
+                      <button
+                        className="innerBtn"
+                        onClick={() => handleEditTask(task.id)}>
+                        edit
+                      </button>
+                      <button
+                        className="innerBtn"
+                        onClick={() => handleDeleteTask(task.id)}>
+                        Delete
+                      </button>
+                      <input
+                        style={{
+                          height: "20px",
+                          width: "20px",
+                        }}
+                        type="checkbox"
+                        checked={task.completed}
+                        onChange={() => handleCompletedTask(task.id)}
+                      />
+                      <label>Completed</label>
+                    </div>
+                  ))}
+              </div>
+            }
+            exact
+          />
+          <Route
+            path="/completed"
+            element={
+              <div className="completedTasks">
+                {tasks
+                  .filter((task) => task.completed)
+                  .map((task) => (
+                    <div className="completedTask" key={task.id}>
+                      <p className="title">{task.title}</p>
+                      <p className="Description">{task.description}</p>
+                      <button
+                        className="innerBtn"
+                        onClick={() => handleEditTask(task.id)}>
+                        edit
+                      </button>
+                      <button
+                        className="innerBtn"
+                        onClick={() => handleDeleteTask(task.id)}>
+                        Delete
+                      </button>
+                    </div>
+                  ))}
+              </div>
+            }
+            exact
+          />
+        </Routes>
       </div>
     </div>
   );
