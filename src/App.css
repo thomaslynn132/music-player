@@ -1,38 +1,76 @@
-.App {
+h1 {
   text-align: center;
 }
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
+.App {
   background-color: #282c34;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
   align-items: center;
+  display: grid;
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.header {
+  margin-top: 0px;
+  height: 50px;
+  width: 100%;
+  padding-top: 0px;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+}
+.input {
+  width: 20vw;
+  height: 30px;
+  display: block;
+  position: relative;
+  box-shadow: 0px 5px 5px 0px;
+  color: rgb(255, 255, 255);
+  background-color: black;
+  margin: 5px;
+  padding: 15px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.addTask {
+  font-size: large;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  background-color: black;
+  width: 150px;
+  height: 50px;
+  color: cadetblue;
+  display: inline-block;
+  margin: 5px;
+  padding: 10px;
+  position: relative;
+  box-shadow: 0px 5px 5px 0px;
+}
+
+.title {
+  color: aqua;
+  font-size: 35px;
+  font-weight: bolder;
+}
+
+.task {
+  padding: 15px;
+  margin: 15px;
+  box-shadow: 5px 5px 0px 0px;
+}
+
+.thingsToDo {
+  width: auto;
+  background-color: rgb(0, 9, 95);
+  margin: 5px;
+  padding: 10px;
+  display: block;
+}
+.catego {
+  height: 30px;
+  width: 100px;
+  color: aquamarine;
+  background-color: slategray;
+  box-sizing: border-box;
+  box-shadow: 0px 5px 5px 0px;
+  margin-left: 8px;
 }
