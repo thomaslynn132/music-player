@@ -8,8 +8,8 @@ import {
   updateDoc,
   doc,
   deleteDoc,
-  db,
-} from "../firebase";
+} from "firebase/firestore";
+import { db } from "../firebase";
 
 function TasksToDo() {
   const [tasks, setTasks] = useState([]);
@@ -21,8 +21,7 @@ function TasksToDo() {
       const fetchTasks = async () => {
         try {
           const q = query(
-            collection(db, "userTasks"),
-            where("userId", "==", user.uid),
+            collection(db, `Users/${user.uid}/userTasks`),
             where("completed", "==", false)
           );
           const querySnapshot = await getDocs(q);
@@ -54,8 +53,11 @@ function TasksToDo() {
   };
 
   const handleDeleteTask = async (taskId) => {
+    if (!user) return;
+
     try {
-      await deleteDoc(doc(db, "userTasks", taskId));
+      const taskDocRef = doc(db, `Users/${user.uid}/userTasks`, taskId);
+      await deleteDoc(taskDocRef);
       setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
     } catch (error) {
       console.error("Error deleting task: ", error);
@@ -63,9 +65,14 @@ function TasksToDo() {
   };
 
   const handleCompletedTask = async (taskId) => {
+    if (!user) return;
+
     try {
-      const taskDoc = doc(db, "userTasks", taskId);
-      await updateDoc(taskDoc, { completed: true, completedDate: new Date() });
+      const taskDocRef = doc(db, `Users/${user.uid}/userTasks`, taskId);
+      await updateDoc(taskDocRef, {
+        completed: true,
+        completedDate: new Date(),
+      });
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
           task.id === taskId ? { ...task, completed: true } : task
@@ -83,7 +90,7 @@ function TasksToDo() {
           <p className="title">{task.title}</p>
           <p className="description">{task.description}</p>
           <p className="description">
-            This task was added on {task.addedDate.toDate().toString()}
+            This task was added on {task.addedDate.toString()}
           </p>
           <button className="innerBtn" onClick={() => handleEditTask(task.id)}>
             Edit

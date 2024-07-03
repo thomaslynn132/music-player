@@ -25,7 +25,6 @@ function CompletedTasks() {
   const fetchTasks = async () => {
     const q = query(
       collection(db, `Users/${user.uid}/userTasks`),
-      where("userId", "==", user.uid),
       where("completed", "==", true)
     );
     const querySnapshot = await getDocs(q);
@@ -38,12 +37,18 @@ function CompletedTasks() {
     setTasks(tasks);
   };
 
-  const handleEditTask = (taskId) => {
+  const handleEditTask = async (taskId) => {
     // Implement edit logic
+    const taskDocRef = doc(db, `Users/${user.uid}/userTasks`, taskId);
+    await updateDoc(taskDocRef, {
+      // Provide the updated fields here
+    });
+    fetchTasks();
   };
 
   const handleDeleteTask = async (taskId) => {
-    await deleteDoc(doc(db, "userTasks", taskId));
+    const taskDocRef = doc(db, `Users/${user.uid}/userTasks`, taskId);
+    await deleteDoc(taskDocRef);
     fetchTasks();
   };
 
@@ -54,8 +59,8 @@ function CompletedTasks() {
           <p className="title">{task.title}</p>
           <p className="description">{task.description}</p>
           <p className="description">
-            This task was added on {task.addedDate.toDate().toString()} and
-            completed on {task.completedDate.toDate().toString()}
+            This task was added on {task.addedDate.toString()} and completed on{" "}
+            {task.completedDate.toString()}
           </p>
           <button className="innerBtn" onClick={() => handleEditTask(task.id)}>
             Edit

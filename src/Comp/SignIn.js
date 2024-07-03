@@ -66,7 +66,7 @@ const SignIn = () => {
               <FaTimes className={user ? "hide" : "invalid"} />
             </label>
             <input
-              type="email"
+              type="text"
               id="username"
               ref={userRef}
               autoComplete="off"
@@ -98,7 +98,6 @@ const SignIn = () => {
             Need an account?
             <br />
             <span className="line">
-              {/*put router link here*/}
               <Link to="/signup" href="#">
                 Sign Up
               </Link>

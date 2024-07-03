@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { getAuth } from "firebase/auth";
 import {
-  db,
   collection,
   addDoc,
   query,
   getDocs,
   updateDoc,
   doc,
-} from "../firebase";
+} from "firebase/firestore";
+import { db } from "../firebase";
 import { Link, Route, Routes } from "react-router-dom";
 import TasksToDo from "./TasksToDo";
 import CompletedTasks from "./CompletedTask";
@@ -34,13 +34,17 @@ function Main() {
   const fetchTasks = async () => {
     if (!user) return;
 
-    const q = query(collection(db, `Users/${user.uid}/userTasks`));
-    const querySnapshot = await getDocs(q);
-    const tasks = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setTasks(tasks);
+    try {
+      const q = query(collection(db, `Users/${user.uid}/userTasks`));
+      const querySnapshot = await getDocs(q);
+      const tasks = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setTasks(tasks);
+    } catch (error) {
+      console.error("Error fetching tasks: ", error);
+    }
   };
 
   const handleTitleChange = (e) => {
@@ -62,11 +66,18 @@ function Main() {
         completedDate: null,
       };
 
+      // Correct collection reference
       const tasksCollectionRef = collection(db, `Users/${user.uid}/userTasks`);
-      await addDoc(tasksCollectionRef, newTask);
-      setTitle("");
-      setDescription("");
-      fetchTasks();
+
+      // Add the document to the collection
+      try {
+        await addDoc(tasksCollectionRef, newTask);
+        setTitle("");
+        setDescription("");
+        fetchTasks();
+      } catch (error) {
+        console.error("Error adding task: ", error);
+      }
     }
   };
 
@@ -76,7 +87,7 @@ function Main() {
     try {
       const taskDocRef = doc(db, `Users/${user.uid}/userTasks`, taskId);
       await updateDoc(taskDocRef, updatedTask);
-      fetchTasks(); // Optionally, refetch tasks to update the UI
+      fetchTasks();
     } catch (error) {
       console.error("Error updating task: ", error);
       alert(`Error updating task: ${error.message}`);
@@ -112,33 +123,28 @@ function Main() {
   return (
     <div className="App">
       <h1>Things I need to do</h1>
-      <div className="header">
-        <div>
-          <label className="title">
-            Title
-            <input
-              type="text"
-              placeholder="Title of my task"
-              className="input"
-              value={title}
-              onChange={handleTitleChange}
-            />
-          </label>
+      <div className="header d-flex flex-row">
+        <div className="titleDes">
+          <label className="title">Title</label>
+          <input
+            type="text"
+            placeholder="Title of my task"
+            className="input"
+            value={title}
+            onChange={handleTitleChange}
+          />
+        </div>
+        <div className="titleDes">
+          <label className="title">Description</label>
+          <input
+            type="text"
+            placeholder="Details of the things I have to do"
+            className="input"
+            value={description}
+            onChange={handleDescriptionChange}
+          />
         </div>
         <div>
-          <label className="title">
-            Description
-            <input
-              type="text"
-              placeholder="Details of the things I have to do"
-              className="input"
-              value={description}
-              onChange={handleDescriptionChange}
-            />
-          </label>
-        </div>
-        <div>
-          <br />
           <button type="button" className="addTask" onClick={handleAddTask}>
             Add task
           </button>
