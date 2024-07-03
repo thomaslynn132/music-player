@@ -1,26 +1,24 @@
-// Router.js
+// CustomRouter.js
 import React from "react";
-import { BrowserRouter as Route, Link, Routes } from "react-router-dom";
-import TasksToDo from "../Pages/TasksToDo";
-import CompletedTask from "../Pages/CompletedTask";
-
+import { Route, Routes } from "react-router-dom";
+import SignIn from "../Comp/SignIn";
+import Register from "../Comp/Register";
+import ProtectedRoute from "../Comp/ProtectedRoute";
+import Main from "../Pages/Main";
 const CustomRouter = () => {
   return (
-    <div>
-      <nav>
-        <Link to="/">ToDo</Link>
-        <Link to="/completed">Completed</Link>
-      </nav>
-
-      <Routes>
-        <Route path="/" exact>
-          <TasksToDo />
-        </Route>
-        <Route path="/completed">
-          <CompletedTask />
-        </Route>
-      </Routes>
-    </div>
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <Main />
+          </ProtectedRoute>
+        }
+      />
+      <Route path="/signin" element={<SignIn />} />
+      <Route path="/signup" element={<Register />} />
+    </Routes>
   );
 };
 
