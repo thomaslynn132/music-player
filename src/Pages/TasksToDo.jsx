@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getAuth } from "firebase/auth";
+import { auth, db } from "../firebase";
 import {
   collection,
   query,
@@ -9,48 +9,39 @@ import {
   doc,
   deleteDoc,
 } from "firebase/firestore";
-import { db } from "../firebase";
+import Main from "./Main";
 
 function TasksToDo() {
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDescription, setEditDescription] = useState("");
   const [tasks, setTasks] = useState([]);
-  const auth = getAuth();
   const user = auth.currentUser;
 
-  useEffect(() => {
+  // Define fetchTasks function
+  const fetchTasks = async () => {
     if (user) {
-      const fetchTasks = async () => {
-        try {
-          const q = query(
-            collection(db, `Users/${user.uid}/userTasks`),
-            where("completed", "==", false)
-          );
-          const querySnapshot = await getDocs(q);
-          const tasks = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-            addedDate: doc.data().addedDate.toDate(), // Convert Firestore timestamp to JavaScript Date
-          }));
-          setTasks(tasks);
-        } catch (error) {
-          console.error("Error fetching tasks: ", error);
-        }
-      };
-
-      fetchTasks();
-    }
-  }, [user]);
-
-  const handleEditTask = async (taskId, updatedTask) => {
-    if (!user) return;
-
-    try {
-      const taskDocRef = doc(db, `Users/${user.uid}/userTasks`, taskId);
-      await updateDoc(taskDocRef, updatedTask);
-    } catch (error) {
-      console.error("Error updating task: ", error);
-      alert(`Error updating task: ${error.message}`);
+      try {
+        const q = query(
+          collection(db, `Users/${user.uid}/userTasks`),
+          where("completed", "==", false)
+        );
+        const querySnapshot = await getDocs(q);
+        const tasks = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          addedDate: doc.data().addedDate.toDate(), // Convert Firestore timestamp to JavaScript Date
+        }));
+        setTasks(tasks);
+      } catch (error) {
+        console.error("Error fetching tasks: ", error);
+      }
     }
   };
+
+  useEffect(() => {
+    fetchTasks();
+  }, [user]);
 
   const handleDeleteTask = async (taskId) => {
     if (!user) return;
@@ -83,32 +74,91 @@ function TasksToDo() {
     }
   };
 
+  const handleEditTask = async (taskId, updatedTask) => {
+    if (!user) return;
+
+    try {
+      const taskDocRef = doc(db, `Users/${user.uid}/userTasks`, taskId);
+      await updateDoc(taskDocRef, updatedTask);
+      fetchTasks();
+    } catch (error) {
+      console.error("Error updating task: ", error);
+      alert(`Error updating task: ${error.message}`);
+    }
+  };
+
+  const handleEditTitleChange = (e) => {
+    setEditTitle(e.target.value);
+  };
+
+  const handleEditDescriptionChange = (e) => {
+    setEditDescription(e.target.value);
+  };
+
+  const startEditingTask = (task) => {
+    setEditingTaskId(task.id);
+    setEditTitle(task.title);
+    setEditDescription(task.description);
+  };
+
+  const handleSaveEdit = () => {
+    if (editTitle.trim() !== "" && editDescription.trim() !== "") {
+      const updatedTask = {
+        title: editTitle,
+        description: editDescription,
+      };
+      console.log("Editing Task ID:", editingTaskId);
+      console.log("Updated Task:", updatedTask);
+      handleEditTask(editingTaskId, updatedTask);
+      setEditingTaskId(null);
+      setEditTitle("");
+      setEditDescription("");
+    }
+  };
+
   return (
-    <div className="thingsToDo">
-      {tasks.map((task) => (
-        <div className="task" key={task.id}>
-          <p className="title">{task.title}</p>
-          <p className="description">{task.description}</p>
-          <p className="description">
-            This task was added on {task.addedDate.toString()}
-          </p>
-          <button className="innerBtn" onClick={() => handleEditTask(task.id)}>
-            Edit
-          </button>
-          <button
-            className="innerBtn"
-            onClick={() => handleDeleteTask(task.id)}>
-            Delete
-          </button>
+    <div className="completedTasks">
+      <Main />
+      {editingTaskId ? (
+        <div className="edit-task">
           <input
-            style={{ height: "20px", width: "20px" }}
-            type="checkbox"
-            checked={task.completed}
-            onChange={() => handleCompletedTask(task.id)}
+            type="text"
+            value={editTitle}
+            onChange={handleEditTitleChange}
           />
-          <label>Completed</label>
+          <input
+            type="text"
+            value={editDescription}
+            onChange={handleEditDescriptionChange}
+          />
+          <button onClick={handleSaveEdit}>Save</button>
         </div>
-      ))}
+      ) : (
+        tasks.map((task) => (
+          <div className="task" key={task.id}>
+            <p className="title">{task.title}</p>
+            <p className="description">{task.description}</p>
+            <p className="description">
+              This task was added on {task.addedDate.toString()}
+            </p>
+            <button className="innerBtn" onClick={() => startEditingTask(task)}>
+              Edit
+            </button>
+            <button
+              className="innerBtn"
+              onClick={() => handleDeleteTask(task.id)}>
+              Delete
+            </button>
+            <input
+              style={{ height: "20px", width: "20px" }}
+              type="checkbox"
+              checked={task.completed}
+              onChange={() => handleCompletedTask(task.id)}
+            />
+            <label>Completed</label>
+          </div>
+        ))
+      )}
     </div>
   );
 }

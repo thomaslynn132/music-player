@@ -18,7 +18,7 @@ function Main() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingTaskId, setEditingTaskId] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editDescription, setEditDescription] = useState("");
 
@@ -103,7 +103,7 @@ function Main() {
   };
 
   const startEditingTask = (task) => {
-    setEditingTaskId(task.id);
+    setEditingTaskId(!editingTaskId);
     setEditTitle(task.title);
     setEditDescription(task.description);
   };
@@ -123,7 +123,7 @@ function Main() {
   return (
     <div className="App">
       <h1>Things I need to do</h1>
-      <div className="header d-flex flex-row">
+      <div className="Header">
         <div className="titleDes">
           <label className="title">Title</label>
           <input
@@ -138,7 +138,7 @@ function Main() {
           <label className="title">Description</label>
           <input
             type="text"
-            placeholder="Details of the things I have to do"
+            placeholder="Details of my task"
             className="input"
             value={description}
             onChange={handleDescriptionChange}
@@ -151,54 +151,13 @@ function Main() {
         </div>
       </div>
       <div className="pages">
-        <Link to="/">
+        <Link to="/taskstodo">
           <button className="catego">To Do</button>
         </Link>
         <Link to="/completed">
           <button className="catego">Completed</button>
         </Link>
       </div>
-      {editingTaskId ? (
-        <div className="edit-task">
-          <input
-            type="text"
-            value={editTitle}
-            onChange={handleEditTitleChange}
-          />
-          <input
-            type="text"
-            value={editDescription}
-            onChange={handleEditDescriptionChange}
-          />
-          <button onClick={handleSaveEdit}>Save</button>
-        </div>
-      ) : (
-        tasks.map((task) => (
-          <div key={task.id}>
-            <h2>{task.title}</h2>
-            <p>{task.description}</p>
-            <button onClick={() => startEditingTask(task)}>Edit</button>
-          </div>
-        ))
-      )}
-      <Routes>
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <TasksToDo tasks={tasks} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/completed"
-          element={
-            <ProtectedRoute>
-              <CompletedTasks tasks={tasks} />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
     </div>
   );
 }
