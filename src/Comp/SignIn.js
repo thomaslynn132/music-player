@@ -61,7 +61,7 @@ const SignIn = () => {
           <h1>Sign In</h1>
           <form onSubmit={handleSubmit}>
             <label htmlFor="username">
-              Email:
+              Username:
               <FaCheck className={user ? "valid" : "hide"} />
               <FaTimes className={user ? "hide" : "invalid"} />
             </label>

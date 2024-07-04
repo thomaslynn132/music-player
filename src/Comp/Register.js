@@ -4,16 +4,16 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { Link } from "react-router-dom";
 import "./Login.css";
-const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
+const EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 
 const Register = () => {
   const userRef = useRef();
   const errRef = useRef();
 
-  const [user, setUser] = useState("");
-  const [validName, setValidName] = useState(false);
-  const [userFocus, setUserFocus] = useState(false);
+  const [email, setEmail] = useState("");
+  const [validEmail, setValidEmail] = useState(false);
+  const [emailFocus, setEmailFocus] = useState(false);
 
   const [pwd, setPwd] = useState("");
   const [validPwd, setValidPwd] = useState(false);
@@ -31,8 +31,8 @@ const Register = () => {
   }, []);
 
   useEffect(() => {
-    setValidName(USER_REGEX.test(user));
-  }, [user]);
+    setValidEmail(EMAIL_REGEX.test(email));
+  }, [email]);
 
   useEffect(() => {
     setValidPwd(PWD_REGEX.test(pwd));
@@ -41,11 +41,11 @@ const Register = () => {
 
   useEffect(() => {
     setErrMsg("");
-  }, [user, pwd, matchPwd]);
+  }, [email, pwd, matchPwd]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const v1 = USER_REGEX.test(user);
+    const v1 = EMAIL_REGEX.test(email);
     const v2 = PWD_REGEX.test(pwd);
 
     if (!v1 || !v2) {
@@ -55,17 +55,22 @@ const Register = () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
-        user,
+        email,
         pwd
       );
       console.log(userCredential.user);
       setSuccess(true);
-      setUser("");
+      setEmail("");
       setPwd("");
       setMatchPwd("");
     } catch (err) {
+      console.error(err); // Log the full error
       if (err.code === "auth/email-already-in-use") {
-        setErrMsg("Username Taken");
+        setErrMsg("Email already in use");
+      } else if (err.code === "auth/invalid-email") {
+        setErrMsg("Invalid email");
+      } else if (err.code === "auth/weak-password") {
+        setErrMsg("Weak password");
       } else {
         setErrMsg("Registration Failed");
       }
@@ -78,8 +83,9 @@ const Register = () => {
       {success ? (
         <section>
           <h1>Success!</h1>
+          <h2>Welcome</h2>
           <p>
-            <a href="#">Sign In</a>
+            <Link to="/">The Dashboard</Link>
           </p>
         </section>
       ) : (
@@ -93,35 +99,35 @@ const Register = () => {
             </p>
             <h1>Register</h1>
             <form onSubmit={handleSubmit}>
-              <label htmlFor="username">
-                Username:
-                <FaCheck className={validName ? "valid" : "hide"} />
-                <FaTimes className={validName || !user ? "hide" : "invalid"} />
+              <label htmlFor="email">
+                Email:
+                <FaCheck className={validEmail ? "valid" : "hide"} />
+                <FaTimes
+                  className={validEmail || !email ? "hide" : "invalid"}
+                />
               </label>
               <input
-                type="text"
-                id="username"
+                type="email"
+                id="email"
                 ref={userRef}
                 autoComplete="off"
-                onChange={(e) => setUser(e.target.value)}
-                value={user}
+                onChange={(e) => setEmail(e.target.value)}
+                value={email}
                 required
-                aria-invalid={validName ? "false" : "true"}
-                aria-describedby="uidnote"
-                onFocus={() => setUserFocus(true)}
-                onBlur={() => setUserFocus(false)}
+                aria-invalid={validEmail ? "false" : "true"}
+                aria-describedby="emailnote"
+                onFocus={() => setEmailFocus(true)}
+                onBlur={() => setEmailFocus(false)}
               />
               <p
-                id="uidnote"
+                id="emailnote"
                 className={
-                  userFocus && user && !validName ? "instructions" : "offscreen"
+                  emailFocus && email && !validEmail
+                    ? "instructions"
+                    : "offscreen"
                 }>
                 <FaInfoCircle />
-                4 to 24 characters.
-                <br />
-                Must begin with a letter.
-                <br />
-                Letters, numbers, underscores, hyphens allowed.
+                Must be a valid email address.
               </p>
 
               <label htmlFor="password">
@@ -148,15 +154,10 @@ const Register = () => {
                 <FaInfoCircle />
                 8 to 24 characters.
                 <br />
-                Must include uppercase and lowercase letters, a number and a
+                Must include uppercase and lowercase letters, a number, and a
                 special character.
                 <br />
-                Allowed special characters:{" "}
-                <span aria-label="exclamation mark">!</span>{" "}
-                <span aria-label="at symbol">@</span>{" "}
-                <span aria-label="hashtag">#</span>{" "}
-                <span aria-label="dollar sign">$</span>{" "}
-                <span aria-label="percent">%</span>
+                Allowed special characters: ! @ # $ %
               </p>
 
               <label htmlFor="confirm_pwd">
@@ -190,7 +191,7 @@ const Register = () => {
 
               <button
                 disabled={
-                  !validName || !validPwd || !validMatch ? true : false
+                  !validEmail || !validPwd || !validMatch ? true : false
                 }>
                 Sign Up
               </button>
@@ -199,7 +200,7 @@ const Register = () => {
               Already registered?
               <br />
               <span className="line">
-                <Link to="/signin">Sign In</Link>
+                <Link to="/login">Sign In</Link>
               </span>
             </p>
           </section>

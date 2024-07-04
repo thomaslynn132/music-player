@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { auth, db } from "../firebase";
 import {
   collection,
@@ -19,7 +19,7 @@ function TasksToDo() {
   const user = auth.currentUser;
 
   // Define fetchTasks function
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     if (user) {
       try {
         const q = query(
@@ -30,18 +30,18 @@ function TasksToDo() {
         const tasks = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
-          addedDate: doc.data().addedDate.toDate(), // Convert Firestore timestamp to JavaScript Date
+          addedDate: doc.data().addedDate.toDate(),
         }));
         setTasks(tasks);
       } catch (error) {
         console.error("Error fetching tasks: ", error);
       }
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchTasks();
-  }, [user]);
+  }, [user, fetchTasks]);
 
   const handleDeleteTask = async (taskId) => {
     if (!user) return;
@@ -53,6 +53,7 @@ function TasksToDo() {
     } catch (error) {
       console.error("Error deleting task: ", error);
     }
+    fetchTasks();
   };
 
   const handleCompletedTask = async (taskId) => {
@@ -66,12 +67,16 @@ function TasksToDo() {
       });
       setTasks((prevTasks) =>
         prevTasks.map((task) =>
-          task.id === taskId ? { ...task, completed: true } : task
+          task.id === taskId
+            ? { ...task, completed: true, completedDate: new Date() }
+            : task
         )
       );
+      console.log("Task completed:", taskId);
     } catch (error) {
       console.error("Error updating task: ", error);
     }
+    fetchTasks();
   };
 
   const handleEditTask = async (taskId, updatedTask) => {
@@ -114,6 +119,7 @@ function TasksToDo() {
       setEditTitle("");
       setEditDescription("");
     }
+    fetchTasks();
   };
 
   return (

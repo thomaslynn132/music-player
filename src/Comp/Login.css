@@ -14,7 +14,7 @@ html {
 
 body {
   min-height: 100vh;
-  background-color: rgba(0, 0, 0, 0.319);
+  background-color: rgba(0, 0, 0, 0.523);
 }
 
 .App {
@@ -124,12 +124,12 @@ button {
 html {
   font-family: "Nunito", sans-serif;
   font-size: 22px;
-  color: #2f2222;
+  color: #0094de;
 }
 
 body {
   min-height: 100vh;
-  background-color: rgba(55, 55, 55, 0.515);
+  background-color: rgba(49, 49, 49, 0.865);
 }
 
 .App {

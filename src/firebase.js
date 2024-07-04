@@ -1,10 +1,11 @@
-//Import the functions you need from the SDKs you need
+// firebase.js
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "@firebase/firestore";
 import {
   getAuth,
   setPersistence,
   browserLocalPersistence,
+  onAuthStateChanged,
 } from "firebase/auth";
 import {
   collection,
@@ -18,6 +19,7 @@ import {
   getDoc,
   updateDoc,
 } from "firebase/firestore";
+
 const firebaseConfig = {
   apiKey: "AIzaSyBCTRBnQ3tuNDJH_zku3_0mw1Fzw0vxLKM",
   authDomain: "my-todo-app-8e31e.firebaseapp.com",
@@ -29,17 +31,27 @@ const firebaseConfig = {
   appId: "1:535521777281:web:b5e3e77ee2a86cd23b1f80",
   measurementId: "G-B8VYYL789W",
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+
 setPersistence(auth, browserLocalPersistence)
   .then(() => {
-    // Existing and future Auth states are now persisted in local storage.
-    // Closing the window will NOT clear the user's session.
+    console.log("Persistence set to local");
   })
   .catch((error) => {
     console.error("Error setting persistence:", error);
   });
+
+// Listen for authentication state changes
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    console.log("User is signed in:", user);
+  } else {
+    console.log("No user is signed out");
+  }
+});
 
 export {
   auth,

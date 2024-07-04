@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { getAuth } from "firebase/auth";
 import {
   collection,
@@ -20,30 +20,40 @@ function CompletedTasks() {
   const auth = getAuth();
   const user = auth.currentUser;
 
-  useEffect(() => {
+  const fetchTasks = useCallback(async () => {
     if (user) {
-      fetchTasks();
+      try {
+        const q = query(
+          collection(db, `Users/${user.uid}/userTasks`),
+          where("completed", "==", true)
+        );
+        const querySnapshot = await getDocs(q);
+        const tasks = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+          addedDate: doc.data().addedDate.toDate(),
+        }));
+        setTasks(tasks);
+      } catch (error) {
+        console.error("Error fetching tasks: ", error);
+      }
     }
   }, [user]);
-
-  const fetchTasks = async () => {
-    const q = query(
-      collection(db, `Users/${user.uid}/userTasks`),
-      where("completed", "==", true)
-    );
-    const querySnapshot = await getDocs(q);
-    const tasks = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-      addedDate: doc.data().addedDate.toDate(), // Convert Firestore timestamp to JavaScript Date
-      completedDate: doc.data().completedDate.toDate(), // Convert Firestore timestamp to JavaScript Date
-    }));
-    setTasks(tasks);
-  };
+  useEffect(() => {
+    fetchTasks();
+  }, [user, fetchTasks]);
 
   const handleDeleteTask = async (taskId) => {
-    const taskDocRef = doc(db, `Users/${user.uid}/userTasks`, taskId);
-    await deleteDoc(taskDocRef);
+    if (!user) return;
+
+    try {
+      const taskDocRef = doc(db, `Users/${user.uid}/userTasks`, taskId);
+      await deleteDoc(taskDocRef);
+      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+    } catch (error) {
+      console.error("Error deleting task: ", error);
+    }
+
     fetchTasks();
   };
   const handleEditTask = async (taskId, updatedTask) => {
@@ -68,7 +78,7 @@ function CompletedTasks() {
   };
 
   const startEditingTask = (task) => {
-    setEditingTaskId(!editingTaskId);
+    setEditingTaskId(task.id);
     setEditTitle(task.title);
     setEditDescription(task.description);
   };
@@ -86,7 +96,9 @@ function CompletedTasks() {
       setEditTitle("");
       setEditDescription("");
     }
+    fetchTasks();
   };
+
   return (
     <>
       <div className="completedTasks">
@@ -112,11 +124,11 @@ function CompletedTasks() {
               <p className="description">{task.description}</p>
               <p className="description">
                 This task was added on {task.addedDate.toString()} and completed
-                on {task.completedDate.toString()}
+                on{task.completedDate.toDate().toLocaleString()}
               </p>
               <button
                 className="innerBtn"
-                onClick={() => startEditingTask(task.id)}>
+                onClick={() => startEditingTask(task)}>
                 Edit
               </button>
               <button
