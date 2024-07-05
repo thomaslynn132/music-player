@@ -8,7 +8,6 @@ function App() {
     <>
       <AuthProvider>
         <BrowserRouter>
-          {" "}
           <CustomRouter />
         </BrowserRouter>
       </AuthProvider>

@@ -68,12 +68,11 @@ function Main() {
         await addDoc(tasksCollectionRef, newTask);
         setTitle("");
         setDescription("");
-        fetchTasks();
+        await fetchTasks();
       } catch (error) {
         console.error("Error adding task: ", error);
       }
     }
-    fetchTasks();
   };
   return (
     <div className="App">
