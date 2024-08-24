@@ -1,10 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
-import App from "./App";
-import "./index.css";
+import "./index.css"; // Import global styles
+import App from "./App"; // Import the main App component
+import { Provider } from "react-redux";
+import { store } from "./redux/store";
+// Render the App component into the root div of the HTML
 ReactDOM.render(
-  <React.StrictMode>
+  <Provider store={store}>
     <App />
-  </React.StrictMode>,
+  </Provider>,
   document.getElementById("root")
 );
+
+// Optional: Log performance metrics

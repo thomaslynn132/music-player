@@ -1,0 +1,2 @@
+REACT_APP_AUDIO_DB_API_KEY=2
+REACT_APP_AUDIO_DB_BASE_URL=https://www.theaudiodb.com/api/v1/json
